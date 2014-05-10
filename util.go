@@ -3,7 +3,6 @@ package pixelsort
 import (
 	"image"
 	"image/color"
-	"sort"
 )
 
 type Region interface {
@@ -15,74 +14,62 @@ type Region interface {
 
 	// Set sets the value of a pixel in the region
 	Set(n int, c color.Color)
-
-	sort.Interface
 }
 
 type rowRegion struct {
 	image *image.RGBA
 	row   int
-	less  func(i, j color.Color) bool
 }
 
-func (r *rowRegion) At(n int) color.Color {
+func (r rowRegion) At(n int) color.Color {
 	b := r.image.Bounds()
 	return r.image.At(b.Min.X+n, b.Min.Y+r.row)
 }
 
-func (r *rowRegion) Size() int {
+func (r rowRegion) Size() int {
 	return r.image.Bounds().Dx()
 }
 
-func (r *rowRegion) Set(n int, c color.Color) {
+func (r rowRegion) Set(n int, c color.Color) {
 	b := r.image.Bounds()
 	r.image.Set(b.Min.X+n, b.Min.Y+r.row, c)
 }
 
-func (i *rowRegion) Len() int {
-	return i.Size()
-}
-
-func (in *rowRegion) Less(i, j int) bool {
-	c1 := in.At(i)
-	c2 := in.At(j)
-	return in.less(c1, c2)
-}
-
-func (in *rowRegion) Swap(i, j int) {
-	tmp := in.At(i)
-	in.Set(i, in.At(j))
-	in.Set(j, tmp)
-}
-
 type RegionEnum interface {
 	Next() Region
+	Value() Region
+	Reset()
 }
 
 type rowEnum struct {
-	image *image.RGBA
-	row   int
-	less  func(i, j color.Color) bool
+	image  *image.RGBA
+	curRow int
 }
 
 func (re *rowEnum) Next() Region {
-	b := re.image.Bounds()
-	if re.row+b.Min.Y >= b.Max.Y-1 {
-		return nil
-	}
-	region := &rowRegion{
-		image: re.image,
-		row:   re.row,
-		less:  re.less,
-	}
-	re.row++
-	return region
+	re.curRow++
+	return re.Value()
 }
 
-func RowEnum(im *image.RGBA, less func(i, j color.Color) bool) RegionEnum {
+func (re *rowEnum) Value() Region {
+	b := re.image.Bounds()
+	if re.curRow+b.Min.Y >= b.Max.Y-1 {
+		return nil
+	}
+	return &rowRegion{
+		image: re.image,
+		row:   re.curRow,
+	}
+}
+
+
+func (re *rowEnum) Reset() {
+	re.curRow = 0
+}
+
+func RowEnum(im *image.RGBA) RegionEnum {
 	return &rowEnum{
-		image: im,
-		row:   0,
-		less:  less,
+		image:  im,
+		curRow: 0,
 	}
 }

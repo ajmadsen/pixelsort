@@ -2,9 +2,12 @@ package main
 
 import (
 	"github.com/ajmadsen/pixelsort"
-  "image"
+	"image"
+	"image/draw"
 	"os"
 	"fmt"
+	"math/rand"
+	"time"
 
   // Import these packages for their side effects, namely decoding
   // images of different formats.
@@ -19,6 +22,8 @@ func main() {
 		os.Exit(-1)
 	}
 
+	rand.Seed(time.Now().UnixNano())
+
 	r, err := os.Open(os.Args[1])
 	if err != nil {
 		fmt.Printf("failed to open file %v: %v\n", os.Args[1], err.Error())
@@ -32,8 +37,14 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// Convert to usable format
+	b := im.Bounds()
+	m := image.NewRGBA(b)
+	draw.Draw(m, b, im, b.Min, draw.Src)
+
 	fmt.Println("Sorting image")
-	sorter := pixelsort.Hue(im)
+	re := pixelsort.RowEnum(m)
+	sorter := pixelsort.PixelSort(re, pixelsort.HueSorter)
 	sorter.Sort()
 
 	fmt.Println("Saving image")
@@ -44,6 +55,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	png.Encode(out, sorter.Image())
+	png.Encode(out, m)
 }
 

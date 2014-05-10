@@ -21,3 +21,7 @@ _testmain.go
 
 *.exe
 *.test
+
+# Anything in test
+test/
+!test/**/*.go
