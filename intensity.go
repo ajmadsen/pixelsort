@@ -17,6 +17,10 @@ func (in *intensity) Sort() {
 	}
 }
 
+func (in *intensity) Image() image.Image {
+	return in.image
+}
+
 func Intensity(im image.Image) Sorter {
 	b := im.Bounds()
 	m := image.NewRGBA(b)
@@ -33,13 +37,14 @@ func (i *rowRegion) Len() int {
 }
 
 func (in *rowRegion) Less(i, j int) bool {
+	if (i == j) {
+		return false
+	}
 	c1 := in.At(i)
 	c2 := in.At(j)
-
-	r1, g1, b1, a1 := c1.RGBA()
-	r2, g2, b2, a2 := c2.RGBA()
-
-	return a1*r1*r1+a1*g1*g1+a1*b1*b1 < a2*r2*r2+a2*g2*g2+a2*b2*b2
+	r1, g1, b1, _ := c1.RGBA()
+	r2, g2, b2, _ := c2.RGBA()
+	return r1*r1+g1*g1+b1*b1 < r2*r2+g2*g2+b2*b2
 }
 
 func (in *rowRegion) Swap(i, j int) {

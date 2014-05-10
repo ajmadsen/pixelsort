@@ -41,6 +41,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	png.Encode(out, im)
+	png.Encode(out, sorter.Image())
 }
 
