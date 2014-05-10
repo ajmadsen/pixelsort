@@ -25,15 +25,18 @@ func main() {
 		os.Exit(-1)
 	}
 
+	fmt.Println("Loading image")
 	im, _, err := image.Decode(r)
 	if err != nil {
 		fmt.Printf("failed to decode image %v: %v\n", os.Args[1], err.Error())
 		os.Exit(-1)
 	}
 
-	sorter := pixelsort.Intensity(im)
+	fmt.Println("Sorting image")
+	sorter := pixelsort.Hue(im)
 	sorter.Sort()
 
+	fmt.Println("Saving image")
 	os.Remove("sorted.png")
 	out, err := os.Create("sorted.png")
 	if err != nil {

@@ -3,6 +3,7 @@ package pixelsort
 import (
 	"image"
 	"image/draw"
+	"image/color"
 	"sort"
 )
 
@@ -27,28 +28,14 @@ func Intensity(im image.Image) Sorter {
 	draw.Draw(m, b, im, b.Min, draw.Src)
 	return &intensity{
 		image: m,
-		re:    RowEnum(m),
+		re:    RowEnum(m, intensitySort),
 	}
 }
 
 // Implement Sort iterface on intensity
-func (i *rowRegion) Len() int {
-	return i.Size()
-}
-
-func (in *rowRegion) Less(i, j int) bool {
-	if (i == j) {
-		return false
-	}
-	c1 := in.At(i)
-	c2 := in.At(j)
-	r1, g1, b1, _ := c1.RGBA()
-	r2, g2, b2, _ := c2.RGBA()
+func intensitySort(i, j color.Color) bool {
+	r1, g1, b1, _ := i.RGBA()
+	r2, g2, b2, _ := j.RGBA()
 	return r1*r1+g1*g1+b1*b1 < r2*r2+g2*g2+b2*b2
 }
 
-func (in *rowRegion) Swap(i, j int) {
-	tmp := in.At(i)
-	in.Set(i, in.At(j))
-	in.Set(j, tmp)
-}
