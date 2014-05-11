@@ -20,6 +20,7 @@ import (
 
 var (
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	memprofile = flag.String("memprofile", "", "write mem profile to file")
 	infile = flag.String("i", "", "file to read")
 	outfile = flag.String("o", "sorted.png", "file to write")
 )
@@ -67,5 +68,15 @@ func main() {
 	}
 
 	png.Encode(out, m)
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
+
 }
 
