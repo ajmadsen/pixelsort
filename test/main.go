@@ -5,9 +5,11 @@ import (
 	"image"
 	"image/draw"
 	"os"
-	"fmt"
+	"log"
 	"math/rand"
 	"time"
+	"flag"
+	"runtime/pprof"
 
   // Import these packages for their side effects, namely decoding
   // images of different formats.
@@ -16,25 +18,35 @@ import (
   _ "image/gif"
 )
 
+var (
+	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	infile = flag.String("i", "", "file to read")
+	outfile = flag.String("o", "sorted.png", "file to write")
+)
+
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Printf("usage: %v <image>\n", os.Args[0])
-		os.Exit(-1)
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
 	}
 
 	rand.Seed(time.Now().UnixNano())
 
-	r, err := os.Open(os.Args[1])
+	r, err := os.Open(*infile)
 	if err != nil {
-		fmt.Printf("failed to open file %v: %v\n", os.Args[1], err.Error())
-		os.Exit(-1)
+		log.Fatalf("failed to open file %v: %v\n", *infile, err)
 	}
 
-	fmt.Println("Loading image")
+	log.Println("Loading image")
 	im, _, err := image.Decode(r)
 	if err != nil {
-		fmt.Printf("failed to decode image %v: %v\n", os.Args[1], err.Error())
-		os.Exit(-1)
+		log.Fatalf("failed to decode image %v: %v\n", *infile, err)
 	}
 
 	// Convert to usable format
@@ -42,17 +54,16 @@ func main() {
 	m := image.NewRGBA(b)
 	draw.Draw(m, b, im, b.Min, draw.Src)
 
-	fmt.Println("Sorting image")
+	log.Println("Sorting image")
 	re := pixelsort.RowEnum(m)
 	sorter := pixelsort.PixelSort(re, pixelsort.HueSorter)
 	sorter.Sort()
 
-	fmt.Println("Saving image")
+	log.Println("Saving image")
 	os.Remove("sorted.png")
-	out, err := os.Create("sorted.png")
+	out, err := os.Create(*outfile)
 	if err != nil {
-		fmt.Printf("could not create file: %v\n", err.Error())
-		os.Exit(-1)
+		log.Fatalf("could not create file: %v\n", err.Error())
 	}
 
 	png.Encode(out, m)

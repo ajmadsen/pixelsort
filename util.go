@@ -62,7 +62,6 @@ func (re *rowEnum) Value() Region {
 	}
 }
 
-
 func (re *rowEnum) Reset() {
 	re.curRow = 0
 }
