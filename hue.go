@@ -27,14 +27,36 @@ func (h *hue) Less(i, j int) bool {
 }
 
 func (h *hue) Swap(i, j int) {
+	l := h.Size()
+	h.swapInternal(i, j)
+
+	// Also swap pixels to the left and right
+	//if i-1 > 0 && j-1 > 0 {
+	//	h.swapInternal(i-1, j-1)
+	//}
+	if i+1 < l && j+1 < l {
+		h.swapInternal(i+1, j+1)
+	}
+	if i+2 < l && j+2 < l {
+		h.swapInternal(i+2, j+2)
+	}
+	if i+3 < l && j+3 < l {
+		h.swapInternal(i+3, j+3)
+	}
+	//if i+4 < l && j+4 < l {
+	//	h.swapInternal(i+4, j+4)
+	//}
+}
+
+func (h *hue) swapInternal(i, j int) {
 	h.himg[i], h.himg[j] = h.himg[j], h.himg[i]
 	bytes := h.Bytes()
 	idx1 := h.Idx(i)
 	idx2 := h.Idx(j)
 	bytes[idx1], bytes[idx2] = bytes[idx2], bytes[idx1]
-	bytes[idx1 + 1], bytes[idx2 + 1] = bytes[idx2 + 1], bytes[idx1 + 1]
-	bytes[idx1 + 2], bytes[idx2 + 2] = bytes[idx2 + 2], bytes[idx1 + 2]
-	bytes[idx1 + 3], bytes[idx2 + 3] = bytes[idx2 + 3], bytes[idx1 + 3]
+	bytes[idx1+1], bytes[idx2+1] = bytes[idx2+1], bytes[idx1+1]
+	bytes[idx1+2], bytes[idx2+2] = bytes[idx2+2], bytes[idx1+2]
+	bytes[idx1+3], bytes[idx2+3] = bytes[idx2+3], bytes[idx1+3]
 }
 
 func (h *hue) Len() int {
@@ -45,6 +67,7 @@ type hsv struct {
 	h, s, v float64
 }
 
+// Inspired by http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
 func colorToHsv(c color.Color) hsv {
 	ri, gi, bi, _ := c.RGBA()
 	r := float64(ri) / 255.0

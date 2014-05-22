@@ -22,6 +22,12 @@ type Region interface {
 	Bytes() []uint8
 }
 
+type RegionEnum interface {
+	Next() Region
+	Value() Region
+	Reset()
+}
+
 type rowRegion struct {
 	image *image.RGBA
 }
@@ -47,12 +53,6 @@ func (r *rowRegion) Set(n int, c color.Color) {
 
 func (r *rowRegion) Bytes() []uint8 {
 	return r.image.Pix
-}
-
-type RegionEnum interface {
-	Next() Region
-	Value() Region
-	Reset()
 }
 
 type rowEnum struct {
@@ -86,5 +86,66 @@ func RowEnum(im *image.RGBA) RegionEnum {
 	return &rowEnum{
 		image:  im,
 		curRow: 0,
+	}
+}
+
+type colRegion struct {
+	image *image.RGBA
+}
+
+func (r *colRegion) At(n int) color.Color {
+	b := r.image.Bounds()
+	return r.image.At(b.Min.X, b.Min.Y+n)
+}
+
+func (r *colRegion) Idx(n int) int {
+	b := r.image.Bounds()
+	return r.image.PixOffset(b.Min.X, b.Min.Y+n)
+}
+
+func (r *colRegion) Size() int {
+	return r.image.Bounds().Dy()
+}
+
+func (r *colRegion) Set(n int, c color.Color) {
+	b := r.image.Bounds()
+	r.image.Set(b.Min.X, b.Min.Y+n, c)
+}
+
+func (r *colRegion) Bytes() []uint8 {
+	return r.image.Pix
+}
+
+type colEnum struct {
+	image  *image.RGBA
+	curCol int
+}
+
+func (re *colEnum) Next() Region {
+	re.curCol++
+	return re.Value()
+}
+
+func (re *colEnum) Value() Region {
+	b := re.image.Bounds()
+	low := b.Min.Add(image.Pt(re.curCol, 0))
+	high := b.Min.Add(image.Pt(re.curCol+1, b.Dy()))
+	sub := image.Rectangle{low, high}
+	if !sub.In(b) {
+		return nil
+	}
+	return &colRegion{
+		image: re.image.SubImage(sub).(*image.RGBA),
+	}
+}
+
+func (re *colEnum) Reset() {
+	re.curCol = 0
+}
+
+func ColEnum(im *image.RGBA) RegionEnum {
+	return &colEnum{
+		image:  im,
+		curCol: 0,
 	}
 }

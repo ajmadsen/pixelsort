@@ -49,6 +49,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to decode image %v: %v\n", *infile, err)
 	}
+	err = r.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Convert to usable format
 	b := im.Bounds()
@@ -56,7 +60,7 @@ func main() {
 	draw.Draw(m, b, im, b.Min, draw.Src)
 
 	log.Println("Sorting image")
-	re := pixelsort.RowEnum(m)
+	re := pixelsort.ColEnum(m)
 	sorter := pixelsort.PixelSort(re, pixelsort.HueSorter)
 	sorter.Sort()
 
@@ -67,7 +71,15 @@ func main() {
 		log.Fatalf("could not create file: %v\n", err.Error())
 	}
 
-	png.Encode(out, m)
+	err = png.Encode(out, m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	err = out.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
