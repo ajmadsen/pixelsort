@@ -23,5 +23,11 @@ _testmain.go
 *.test
 
 # Anything in test
-test/
+!test/
+test/*
+
+!test/edge/
+test/edge/*
+
+# except go files
 !test/**/*.go
