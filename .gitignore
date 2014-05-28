@@ -29,5 +29,8 @@ test/*
 !test/edge/
 test/edge/*
 
+!test/neighbor/
+test/neighbor/*
+
 # except go files
 !test/**/*.go
