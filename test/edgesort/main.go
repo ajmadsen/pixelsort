@@ -30,6 +30,7 @@ var (
 	thresh  = flag.Int("t", 0, "threshold for the sobel filter")
 	compute = flag.Bool("compute", false, "compute best threshold and exit")
 	psobel  = flag.Bool("sobel", false, "only dump sobel and exit")
+	phist   = flag.Bool("hist", false, "print histogram")
 )
 
 type pixim struct {
@@ -238,6 +239,10 @@ func main() {
 
 	log.Println("Computing pixel gradient")
 	s, hist := sobel(gray)
+
+	if *phist {
+		log.Print(hist)
+	}
 
 	if *compute {
 		t := computeThresh(hist, b.Dx()*b.Dy())
