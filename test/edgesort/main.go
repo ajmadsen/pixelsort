@@ -241,16 +241,19 @@ func main() {
 	if *compute {
 		t := computeThresh(hist, b.Dx()*b.Dy())
 		log.Printf("Best threshold = %v", t)
-		os.Exit(0)
 	}
 
 	threshold(s, uint8(*thresh))
-	sout, err := os.Create("sobel.png")
-	if err != nil {
-		log.Fatal(err)
+
+	if *compute {
+		sout, err := os.Create(flag.Arg(1))
+		if err != nil {
+			log.Fatal(err)
+		}
+		png.Encode(sout, s)
+		sout.Close()
+		os.Exit(0)
 	}
-	png.Encode(sout, s)
-	sout.Close()
 
 	log.Println("Computing regions")
 	regions := edgeToRegion(s)
