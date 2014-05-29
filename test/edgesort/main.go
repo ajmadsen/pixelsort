@@ -29,6 +29,7 @@ var (
 
 	thresh  = flag.Int("t", 0, "threshold for the sobel filter")
 	compute = flag.Bool("compute", false, "compute best threshold and exit")
+	psobel  = flag.Bool("sobel", false, "only dump sobel and exit")
 )
 
 type pixim struct {
@@ -241,11 +242,21 @@ func main() {
 	if *compute {
 		t := computeThresh(hist, b.Dx()*b.Dy())
 		log.Printf("Best threshold = %v", t)
+
+		threshold(s, uint8(t))
+
+		sout, err := os.Create(flag.Arg(1))
+		if err != nil {
+			log.Fatal(err)
+		}
+		png.Encode(sout, s)
+		sout.Close()
+		os.Exit(0)
 	}
 
 	threshold(s, uint8(*thresh))
 
-	if *compute {
+	if *psobel {
 		sout, err := os.Create(flag.Arg(1))
 		if err != nil {
 			log.Fatal(err)
