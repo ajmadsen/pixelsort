@@ -35,5 +35,8 @@ test/neighbor/*
 !test/sort/
 test/sort/*
 
+!test/edgesort/
+test/edgesort/*
+
 # except go files
 !test/**/*.go
