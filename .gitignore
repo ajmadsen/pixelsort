@@ -38,5 +38,8 @@ test/sort/*
 !test/edgesort/
 test/edgesort/*
 
+!test/planar/
+test/planar/*
+
 # except go files
 !test/**/*.go
